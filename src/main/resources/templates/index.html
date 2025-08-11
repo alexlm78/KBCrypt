@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kreaker's BCrypt Hash Generator & Validator</title>
+    <link href="/webjars/bootstrap/5.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #F8F6BE 0%, #955130 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(149, 81, 48, 0.15);
+            margin: 20px auto;
+            max-width: 1200px;
+            border: 1px solid rgba(248, 246, 190, 0.3);
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            background: linear-gradient(45deg, #955130, #7a3f26);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            border: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .btn-custom {
+            background: linear-gradient(45deg, #955130, #7a3f26);
+            border: none;
+            color: white;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(149, 81, 48, 0.3);
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(149, 81, 48, 0.4);
+            color: white;
+        }
+
+        .btn-danger-custom {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a5a);
+            border: none;
+            color: white;
+            border-radius: 10px;
+            padding: 8px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-danger-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+            color: white;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #955130;
+            box-shadow: 0 0 0 0.2rem rgba(149, 81, 48, 0.25);
+        }
+
+        .result-box {
+            background: rgba(248, 246, 190, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 2px solid rgba(149, 81, 48, 0.2);
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            border: none;
+            margin-top: 15px;
+        }
+
+        .history-toggle {
+            background: linear-gradient(45deg, #F8F6BE, #e8e2a8);
+            border: none;
+            color: #955130;
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(248, 246, 190, 0.3);
+        }
+
+        .history-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(248, 246, 190, 0.4);
+            color: #955130;
+        }
+
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .table thead th {
+            background: linear-gradient(45deg, #955130, #7a3f26);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+
+        .badge-operation {
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .badge-generate {
+            background: linear-gradient(45deg, #955130, #7a3f26);
+            color: white;
+        }
+
+        .badge-validate {
+            background: linear-gradient(45deg, #F8F6BE, #e8e2a8);
+            color: #955130;
+        }
+
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #955130;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .title-gradient {
+            background: linear-gradient(45deg, #955130, #7a3f26);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            border-top: 2px solid rgba(149, 81, 48, 0.1);
+            text-align: center;
+            color: #955130;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #955130;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #7a3f26;
+            text-decoration: underline;
+        }
+
+        .footer .copyright {
+            margin-bottom: 5px;
+        }
+
+        .footer .dev-info {
+            font-size: 0.8rem;
+            color: rgba(149, 81, 48, 0.7);
+        }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <div class="main-container p-4">
+        <h1 class="text-center title-gradient">🔐 BCrypt Hash Tool</h1>
+        <p class="text-center text-muted mb-4">Genera y valida hashes BCrypt de forma segura</p>
+
+        <div class="row">
+            <!-- Generator Section -->
+            <div class="col-md-6 mb-4">
+                <div class="card section-card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">🔒 Generar Hash BCrypt</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="passwordToHash" class="form-label fw-bold">Contraseña:</label>
+                            <input type="password" class="form-control" id="passwordToHash" placeholder="Ingresa la contraseña">
+                        </div>
+                        <div class="mb-3">
+                            <label for="rounds" class="form-label fw-bold">Rounds (4-31):</label>
+                            <select class="form-select" id="rounds">
+                                <option value="4">4 (Muy rápido)</option>
+                                <option value="8">8 (Rápido)</option>
+                                <option value="10">10 (Normal)</option>
+                                <option value="12" selected>12 (Recomendado)</option>
+                                <option value="14">14 (Lento)</option>
+                                <option value="16">16 (Muy lento)</option>
+                                <option value="20">20 (Extremo)</option>
+                            </select>
+                            <div class="form-text">Mayor número = más seguro pero más lento</div>
+                        </div>
+                        <button type="button" class="btn btn-custom w-100" onclick="generateHash()">
+                            <div class="loader" id="generateLoader"></div>
+                            <span id="generateText">🔐 Generar Hash</span>
+                        </button>
+                        <div id="hashResult" class="result-box" style="display:none;"></div>
+                        <div id="generateAlert" class="alert alert-custom" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validator Section -->
+            <div class="col-md-6 mb-4">
+                <div class="card section-card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">✅ Validar Hash BCrypt</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="passwordToValidate" class="form-label fw-bold">Contraseña:</label>
+                            <input type="password" class="form-control" id="passwordToValidate" placeholder="Ingresa la contraseña">
+                        </div>
+                        <div class="mb-3">
+                            <label for="hashToValidate" class="form-label fw-bold">Hash BCrypt:</label>
+                            <textarea class="form-control" id="hashToValidate" rows="3" placeholder="$2a$12$..."></textarea>
+                        </div>
+                        <button type="button" class="btn btn-custom w-100" onclick="validateHash()">
+                            <div class="loader" id="validateLoader"></div>
+                            <span id="validateText">🔍 Validar Hash</span>
+                        </button>
+                        <div id="validateResult" class="result-box" style="display:none;"></div>
+                        <div id="validateAlert" class="alert alert-custom" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card section-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">📊 Historial de Operaciones</h5>
+                        <div>
+                            <button type="button" class="btn history-toggle btn-sm" onclick="toggleHistory()">
+                                <span id="historyToggleText">Mostrar Historial</span>
+                            </button>
+                            <button type="button" class="btn btn-danger-custom btn-sm ms-2" onclick="clearHistory()" style="display:none;" id="clearHistoryBtn">
+                                🗑️ Limpiar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body" id="historySection" style="display:none;">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Operación</th>
+                                    <th>Contraseña</th>
+                                    <th>Hash</th>
+                                    <th>Rounds</th>
+                                    <th>Resultado</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                <!-- History entries will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-muted mt-3 mb-0">
+                            <small>💡 Las contraseñas se muestran parcialmente enmascaradas por seguridad. Máximo 100 entradas.</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="copyright">
+                © 2025 <a href="#" onclick="return false;">Kreaker Developments</a>
+            </div>
+            <div class="dev-info">
+                Desarrollado por Alejandro López Monzón
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/webjars/jquery/3.7.1/jquery.min.js"></script>
+<script src="/webjars/bootstrap/5.3.7/js/bootstrap.bundle.min.js"></script>
+<script>
+    let historyVisible = false;
+
+    function generateHash() {
+        const password = $('#passwordToHash').val();
+        const rounds = parseInt($('#rounds').val());
+
+        if (!password) {
+            showAlert('generateAlert', 'Por favor, ingresa una contraseña', 'danger');
+            return;
+        }
+
+        showLoader('generateLoader', 'generateText', 'Generando...');
+
+        $.ajax({
+            url: '/generate',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                password: password,
+                rounds: rounds
+            }),
+            success: function(response) {
+                if (response.success) {
+                    $('#hashResult').html('<strong>Hash generado:</strong><br>' + response.hash).show();
+                    showAlert('generateAlert', response.message, 'success');
+                    
+                    if (historyVisible) {
+                        loadHistory();
+                    }
+                } else {
+                    showAlert('generateAlert', response.message, 'danger');
+                    $('#hashResult').hide();
+                }
+            },
+            error: function() {
+                showAlert('generateAlert', 'Error de conexión al servidor', 'danger');
+                $('#hashResult').hide();
+            },
+            complete: function() {
+                hideLoader('generateLoader', 'generateText', '🔐 Generar Hash');
+            }
+        });
+    }
+
+    function validateHash() {
+        const password = $('#passwordToValidate').val();
+        const hash = $('#hashToValidate').val();
+
+        if (!password) {
+            showAlert('validateAlert', 'Por favor, ingresa una contraseña', 'danger');
+            return;
+        }
+
+        if (!hash) {
+            showAlert('validateAlert', 'Por favor, ingresa un hash BCrypt', 'danger');
+            return;
+        }
+
+        showLoader('validateLoader', 'validateText', 'Validando...');
+
+        $.ajax({
+            url: '/validate',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                password: password,
+                hash: hash
+            }),
+            success: function(response) {
+                if (response.success) {
+                    const resultIcon = response.matches ? '✅' : '❌';
+                    const resultText = response.matches ? 'VÁLIDO' : 'INVÁLIDO';
+                    const resultClass = response.matches ? 'text-success' : 'text-danger';
+
+                    $('#validateResult').html(
+                        '<strong>Resultado:</strong><br>' +
+                        '<span class="' + resultClass + ' fw-bold fs-5">' + resultIcon + ' ' + resultText + '</span>'
+                    ).show();
+
+                    const alertType = response.matches ? 'success' : 'warning';
+                    showAlert('validateAlert', response.message, alertType);
+
+                    if (historyVisible) {
+                        loadHistory();
+                    }
+                } else {
+                    showAlert('validateAlert', response.message, 'danger');
+                    $('#validateResult').hide();
+                }
+            },
+            error: function() {
+                showAlert('validateAlert', 'Error de conexión al servidor', 'danger');
+                $('#validateResult').hide();
+            },
+            complete: function() {
+                hideLoader('validateLoader', 'validateText', '🔍 Validar Hash');
+            }
+        });
+    }
+
+    function toggleHistory() {
+        historyVisible = !historyVisible;
+
+        if (historyVisible) {
+            $('#historySection').show();
+            $('#historyToggleText').text('Ocultar Historial');
+            $('#clearHistoryBtn').show();
+            loadHistory();
+        } else {
+            $('#historySection').hide();
+            $('#historyToggleText').text('Mostrar Historial');
+            $('#clearHistoryBtn').hide();
+        }
+    }
+
+    function loadHistory() {
+        $.ajax({
+            url: '/history',
+            method: 'GET',
+            success: function(history) {
+                const tbody = $('#historyTableBody');
+                tbody.empty();
+
+                if (history.length === 0) {
+                    tbody.append('<tr><td colspan="6" class="text-center text-muted">No hay entradas en el historial</td></tr>');
+                    return;
+                }
+
+                history.reverse().forEach(function(entry) {
+                    const operationBadge = entry.operation === 'GENERATE' ?
+                        '<span class="badge badge-generate">GENERAR</span>' :
+                        '<span class="badge badge-validate">VALIDAR</span>';
+
+                    let resultCell = '-';
+                    if (entry.operation === 'VALIDATE') {
+                        resultCell = entry.matches ?
+                            '<span class="text-success fw-bold">✅ VÁLIDO</span>' :
+                            '<span class="text-danger fw-bold">❌ INVÁLIDO</span>';
+                    }
+
+                    const shortHash = entry.hash.length > 30 ?
+                        entry.hash.substring(0, 30) + '...' : entry.hash;
+
+                    tbody.append(`
+                            <tr>
+                                <td>${operationBadge}</td>
+                                <td><code>${entry.password}</code></td>
+                                <td><small><code title="${entry.hash}">${shortHash}</code></small></td>
+                                <td><span class="badge bg-secondary">${entry.rounds}</span></td>
+                                <td>${resultCell}</td>
+                                <td><small>${entry.timestamp}</small></td>
+                            </tr>
+                        `);
+                });
+            },
+            error: function() {
+                console.error('Error al cargar el historial');
+            }
+        });
+    }
+
+    function clearHistory() {
+        if (!confirm('¿Estás seguro de que quieres limpiar todo el historial?')) {
+            return;
+        }
+
+        $.ajax({
+            url: '/history/clear',
+            method: 'POST',
+            success: function(response) {
+                if (response.success) {
+                    loadHistory();
+                    showAlert('generateAlert', 'Historial limpiado exitosamente', 'info');
+                    setTimeout(() => {
+                        $('#generateAlert').hide();
+                    }, 3000);
+                }
+            },
+            error: function() {
+                console.error('Error al limpiar el historial');
+            }
+        });
+    }
+
+    function showAlert(alertId, message, type) {
+        const alertClass = 'alert-' + type;
+        $('#' + alertId).removeClass().addClass('alert alert-custom ' + alertClass).html(message).show();
+
+        setTimeout(() => {
+            $('#' + alertId).fadeOut();
+        }, 5000);
+    }
+
+    function showLoader(loaderId, textId, loadingText) {
+        $('#' + loaderId).show();
+        $('#' + textId).text(loadingText);
+    }
+
+    function hideLoader(loaderId, textId, originalText) {
+        $('#' + loaderId).hide();
+        $('#' + textId).text(originalText);
+    }
+
+    // Funcionalidad para copiar hash al portapapeles
+    $(document).on('click', '#hashResult', function() {
+        const hashText = $(this).text().replace('Hash generado:', '').trim();
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(hashText).then(() => {
+                showAlert('generateAlert', '📋 Hash copiado al portapapeles', 'info');
+            });
+        }
+    });
+
+    // Enter key handlers
+    $('#passwordToHash').keypress(function(e) {
+        if (e.which === 13) {
+            generateHash();
+        }
+    });
+
+    $('#passwordToValidate, #hashToValidate').keypress(function(e) {
+        if (e.which === 13) {
+            validateHash();
+        }
+    });
+
+    // Tooltip para indicar que se puede copiar el hash
+    $('#hashResult').attr('title', 'Haz clic para copiar al portapapeles').css('cursor', 'pointer');
+</script>
+
+</body>
+</html>

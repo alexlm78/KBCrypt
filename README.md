@@ -1,4 +1,4 @@
-# 🔐 KBCrypt - BCrypt Hash Generator & Validator
+# Kreaker's BCrypt Hash Generator & Validator
 
 Una aplicación web moderna y completa para generar y validar hashes BCrypt de forma segura. Desarrollada con Spring Boot y diseñada para desarrolladores y profesionales de seguridad.
 
