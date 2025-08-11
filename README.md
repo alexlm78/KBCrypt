@@ -144,6 +144,7 @@ POST /history/clear
 ## 🏗️ Arquitectura
 
 ### Stack Tecnológico
+
 - **Backend**: Spring Boot 3.5.4, Java 21
 - **Seguridad**: Spring Security Crypto (BCrypt)
 - **Frontend**: Thymeleaf, Bootstrap 5.3.7, jQuery 3.7.1
@@ -206,7 +207,9 @@ spring.thymeleaf.enabled=true
 ## 🎨 Personalización
 
 ### Paleta de Colores
+
 La aplicación utiliza una paleta de colores cálida y profesional:
+
 - **Primario**: #955130 (Marrón Terracota)
 - **Secundario**: #F8F6BE (Amarillo Crema)
 - **Variantes**: #7a3f26, #e8e2a8
@@ -251,11 +254,11 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 👨‍💻 Autor
 
-**Alejandro López Monzón**  
+**Alejandro López Monzón**
 *Kreaker Developments*
 
-- GitHub: [@kreaker](https://github.com/kreaker)
-- Email: contacto@kreaker.dev
+- GitHub: [@alexlm78](https://github.com/alexlm78)
+- Email: alejandro@kreaker.dev
 
 ## 🙏 Agradecimientos
 
